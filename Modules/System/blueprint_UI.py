@@ -8,11 +8,10 @@ class Blueprint_UI:
     def __init__(self):
         # Store UI elements into a dictionary
         self.UIElements = {}
-        try:
-            if cmds.window("blueprint_UI_window", e=True):
-                cmds.delete("blueprint_UI_window")
-        except:
-            pass
+        if cmds.window("blueprint_UI_window", exists=True):
+            cmds.deleteUI("blueprint_UI_window")
+
+
         windowWidth = 400
         windowHeight = 598
 
@@ -81,10 +80,17 @@ class Blueprint_UI:
             if namespaces[i].find("__") != -1:
                 namespaces[i] = namespaces[i].partition("__")[2]
 
+        newSuffix = utils.findHighestTrailingNumber(namespaces, basename)+1
+
+        userSpecName = basename + str(newSuffix)
 
 
         mod = __import__("Modules.Blueprint." + module, {}, {}, [module])
         importlib.reload(mod)
         moduleClass =getattr(mod, mod.CLASS_NAME) # module reference with out parentesis
-        moduleInstance = moduleClass()# module instance with parentesis
+        moduleInstance = moduleClass(userSpecName)# module instance with parentesis
         moduleInstance.install()
+
+        moduleTransform = mod.CLASS_NAME +"__"+userSpecName+":module_transform"
+        cmds.select(moduleTransform, r=True)
+        cmds.setToolTo("moveSuperContext")
