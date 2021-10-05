@@ -101,7 +101,7 @@ class ModuleA():
         :return:
         '''
         print("##########################################TRANSLATION CTRL#############################################")
-        posControlFile = "D:/Maya2022/scripts/GM21_Rig/RiggingTool/ControlObjects/Blueprint/translation_control.ma"
+        posControlFile = "D:/Maya2022/scripts/GM21_Rig/RiggingTool/ControlObjects/Blueprint/translation_control1.ma"
         cmds.file(posControlFile, i=True)
 
         print("# Result: importing translation file -> {} #".format(posControlFile))
@@ -114,13 +114,13 @@ class ModuleA():
             cmds.rename(node, '{}_{}'.format(joint, node), ignoreShape=True)
 
         control = '{}_translation_ctrl'.format(joint)
-
-        cmds.parent(control, self.moduleTransform, a=True)
+        controlGrp = '{}_translation_ctrl_root'.format(joint)
+        cmds.parent(controlGrp, self.moduleTransform, a=True)
 
         # getting joint pos
         jointPos = cmds.xform(joint, q=True, ws=True, t=True)
 
-        cmds.xform(control, ws=True, a=True, t=jointPos)
+        cmds.xform(controlGrp, ws=True, a=True, t=jointPos)
 
         niceName = utils.stripLeadingNamespace(joint)[1]
         attrName = '{}_T'.format(niceName)
