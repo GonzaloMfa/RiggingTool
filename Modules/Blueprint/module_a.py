@@ -101,7 +101,7 @@ class ModuleA():
         :return:
         '''
         print("##########################################TRANSLATION CTRL#############################################")
-        posControlFile = "D:/Maya2022/scripts/GM21_Rig/RiggingTool/ControlObjects/Blueprint/translation_control1.ma"
+        posControlFile = "D:/Maya2022/scripts/GM21_Rig/RiggingTool/ControlObjects/Blueprint/translation_control.ma"
         cmds.file(posControlFile, i=True)
 
         print("# Result: importing translation file -> {} #".format(posControlFile))
