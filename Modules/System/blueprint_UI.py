@@ -155,5 +155,29 @@ class Blueprint_UI:
         validModules = moduleNameInfo[0]
         validModulesNames = moduleNameInfo[1]
 
-        print(validModules)
-        print(validModulesNames)
+        for n in namespace:
+            splitString = n.partition("__")
+
+            if splitString[1] != "":
+                module = splitString[0]
+                userSpecifiedName = splitString[2]
+
+                if module in validModulesNames:
+                    index = validModulesNames.index(module)
+                    moduleInfo.append([validModules[index], userSpecifiedName])
+        if len(moduleInfo) == 0:
+            cmds.confirmDialog(messageAlign="center", title="Lock Blueprints",
+                                        message="There appear to be no blueprint module "
+                                                "\ninstances in the current scene. \nAbborting lock.",
+                                        button=["Accept"], defaultButton="Accept")
+            return
+        moduleInstances = []
+
+        for module in moduleInfo:
+            mod = __import__("Modules.Blueprint.{}".format(module[0]), {}, {}, [module[0]])
+            importlib.reload(mod)
+
+            moduleClass = getattr(mod, mod.CLASS_NAME)
+            moduleInst = moduleClass(userSpecifiedName=module[1])
+
+            moduleInst.lock_phase1()
