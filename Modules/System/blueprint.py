@@ -4,24 +4,27 @@ import Modules.System.utils as utils
 import importlib
 importlib.reload(utils)
 
-CLASS_NAME = "ModuleA"
+import os
 
-TITLE = "Module A"
-DESCRIPTION = "Test description for module A"
-ICON = "D:\Maya2022\scripts\GM21_Rig\RiggingTool\Icons\hand.png"
+class Blueprint():
+    def __init__(self, moduleName, userSpecifiedName, jointInfo):
 
-class ModuleA():
-    def __init__(self, userSpecifiedName):
-        self.moduleName = CLASS_NAME
+        self.moduleName = moduleName
         self.userSpecifiedName = userSpecifiedName
 
         self.moduleNameSpace = self.moduleName + "__" + self.userSpecifiedName
-
-        print(self.moduleNameSpace)
+        self.jointInfo = jointInfo
         self.containerName = self.moduleNameSpace + ":module_container"
+    # Methods intended for overriding by derived classes
+    def install_custom(self, joints):
+        '''
+        function for overriding by other classes
+        :param joints:
+        :return:
+        '''
+        print("install_custom() method is not implemented by derived class")
 
-        # joint info list
-        self.jointInfo = [["root", [0.0, 0.0, 0.0]], ["end_joint", [4.0, 0.0, 0.0]]]
+    # Baseclass Methods
     def install(self):
         '''
         in the install method we create all the functionality for the first module
@@ -30,7 +33,7 @@ class ModuleA():
         cmds.namespace(setNamespace=":")
         cmds.namespace(add=self.moduleNameSpace)
         print("#######################################################################################################")
-        print("############################################## MODULE A ###############################################")
+        print("############################################## Blueprint ##############################################")
         print("#######################################################################################################")
         # Creating a module group
         self.jointsGrp = cmds.createNode('transform', n="{}:joint_grp".format(self.moduleNameSpace))
@@ -89,8 +92,7 @@ class ModuleA():
             self.setupStretchyJointSegment(joints[index], joints[index+1])
 
         #  NON DEFAULT FUNCTIONALITY
-        self.createOrientationCtrl(joints[0], joints[1])
-
+        self.install_custom(joints)
 
         utils.forceSceneUpdate()
         cmds.lockNode(self.containerName, lock=True, lockUnpublished=True)
@@ -101,7 +103,7 @@ class ModuleA():
         :return:
         '''
         print("##########################################TRANSLATION CTRL#############################################")
-        posControlFile = "D:/Maya2022/scripts/GM21_Rig/RiggingTool/ControlObjects/Blueprint/translation_control.ma"
+        posControlFile = os.environ["RIGGING_TOOL_ROOT"] + "/ControlObjects/Blueprint/translation_control.ma"
         cmds.file(posControlFile, i=True)
 
         print("# Result: importing translation file -> {} #".format(posControlFile))
@@ -186,7 +188,7 @@ class ModuleA():
         :param childJoint:
         :return:
         '''
-        objectFile = "D:/Maya2022/scripts/GM21_Rig/RiggingTool/{}".format(objectRelativeFilePath)
+        objectFile = os.environ["RIGGING_TOOL_ROOT"] + "/{}".format(objectRelativeFilePath)
         cmds.file(objectFile, i=True)
 
         objectContainer = cmds.rename(objectContainerName, '{}_{}'.format(parentJoint, objectContainerName))
@@ -214,7 +216,7 @@ class ModuleA():
         :param rootPos:
         :return:
         '''
-        ctrlGrpFile = "D:/Maya2022/scripts/GM21_Rig/RiggingTool/ControlObjects/Blueprint/controlGrp_ctrl.ma"
+        ctrlGrpFile = os.environ["RIGGING_TOOL_ROOT"] + "/ControlObjects/Blueprint/controlGrp_ctrl.ma"
         cmds.file(ctrlGrpFile, i=True)
 
         self.moduleTransform = cmds.rename('controlGrp_ctrl', '{}:module_transform'.format(self.moduleNameSpace))

@@ -22,20 +22,35 @@ class Blueprint_UI:
         tabHeight = 500
         self.UIElements["tabs"] = cmds.tabLayout(h=tabHeight, innerMarginWidth=5, innerMarginHeight=5)
         tabWidth = cmds.tabLayout(self.UIElements["tabs"], q=True, w=True)
-        self.scrollWidth = 220
+        self.scrollWidth = 340
         self.initialiseModuleTab(tabWidth, tabHeight)
 
         cmds.tabLayout(self.UIElements["tabs"], e=True, tabLabelIndex=([1, "Modules"]))
+
+        cmds.setParent(self.UIElements["topLevelColumn"])
+        self.UIElements["lockPublishColumn"] = cmds.columnLayout(adj=True, columnAlign="center", rs=3)
+
+        cmds.separator()
+
+        self.UIElements["lockBtn"] = cmds.button(l="Lock", c=self.lock)
+
+        cmds.separator()
+
+        self.UIElements["publishBtn"] = cmds.button(l="Publish")
+
+        cmds.separator()
+
 
         # Display window
         cmds.showWindow(self.UIElements["window"])
 
     def initialiseModuleTab(self, tabHeight, tabWidth):
+
         scrollHeight = tabHeight# temp value
 
         self.UIElements["moduleColumn"] = cmds.columnLayout(adj=True, rs=3)
 
-        self.UIElements["moduleFrameLayout"] = cmds.frameLayout(h=150, collapsable=False, borderVisible= False, labelVisible= False)
+        self.UIElements["moduleFrameLayout"] = cmds.frameLayout(h=scrollHeight+250, collapsable=False, borderVisible= False, labelVisible= False)
 
         self.UIElements["moduleList_Scroll"] = cmds.scrollLayout(hst=0)
 
@@ -49,6 +64,32 @@ class Blueprint_UI:
             cmds.setParent(self.UIElements["moduleList_column"])
             cmds.separator()
         cmds.setParent(self.UIElements["moduleColumn"])
+        cmds.separator()
+
+        self.UIElements["moduleName_row"] = cmds.rowLayout(nc=2, columnAttach=(1, "right",0), columnWidth=[(1, 80)], adjustableColumn=2)
+        cmds.text(l="Module Name :")
+        self.UIElements["moduleName"]= cmds.textField(enable=False, alwaysInvokeEnterCommandOnReturn=True)
+
+        cmds.setParent(self.UIElements["moduleColumn"])
+        columnWidth = (tabWidth - 20)/3
+        self.UIElements["moduleButtons_rowColumn"] = cmds.rowColumnLayout(numberOfColumns=3,
+                                                                          ro = [(1, "both",2),(2, "both",2),(3, "both",2)],
+                                                                          columnAttach=[(1,"both",3), (2,"both",3), (3,"both",3)],
+                                                                          columnWidth=[(1, columnWidth),(2, columnWidth),(3, columnWidth)])
+        self.UIElements["rehookBtn"] = cmds.button(enable=False, label="Re-hook")
+        self.UIElements["snapRootBtn"] = cmds.button(enable=False, label="Snap Root > Hook")
+        self.UIElements["constrainRootBtn"] = cmds.button(enable=False, label="Constrain Root > Hook")
+
+        self.UIElements["groupSelectedBtn"] = cmds.button(label="Group Selected")
+        self.UIElements["ungroupBtn"] = cmds.button(enable=False, label="Ungroup")
+        self.UIElements["mirrrorModuleBtn"] = cmds.button(enable=False, label="Mirror Module")
+
+        cmds.text(l="")
+        self.UIElements["deleteModuleBtn"] = cmds.button(enable=False, label="Delete Module")
+        self.UIElements["symmetryMoveCheckBox"] = cmds.checkBox(enable=True, l="Symmetry Move")
+
+        cmds.setParent(self.UIElements["moduleColumn"])
+
         cmds.separator()
 
     def createModuleInstallButton(self, module):
@@ -94,3 +135,25 @@ class Blueprint_UI:
         moduleTransform = mod.CLASS_NAME +"__"+userSpecName+":module_transform"
         cmds.select(moduleTransform, r=True)
         cmds.setToolTo("moveSuperContext")
+
+    def lock(self, *args):
+        result = cmds.confirmDialog(messageAlign="center", title="Lock Blueprints",
+                                    message="The action of locking a character will convert the current blueprint modules"
+                                            "to joints. \nThis action cannot be undone. \nModifications to the "
+                                            "cannot be made after this point. \nDo you want to continue?",
+                                    button=["Accept", "Cancel"], defaultButton="Accept", cancelButton="Cancel",
+                                    dismissString="Cancel")
+        if result != "Accept":
+            return
+        moduleInfo =[] # store (module, userSpecifiedName) pairs
+        cmds.namespace(setNamespace=":")
+        namespace = cmds.namespaceInfo(listOnlyNamespaces=True)
+
+        # ensuring the namespaces contains a blueprint
+        moduleNameInfo = utils.findAllModulesNames("Modules/Blueprint")
+
+        validModules = moduleNameInfo[0]
+        validModulesNames = moduleNameInfo[1]
+
+        print(validModules)
+        print(validModulesNames)

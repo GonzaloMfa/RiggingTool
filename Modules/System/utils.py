@@ -1,3 +1,5 @@
+import importlib
+
 import maya.cmds as cmds
 def findAllModules(relativeDirectory):
     # Search the modules directory for all available mdules
@@ -8,21 +10,37 @@ def findAllModules(relativeDirectory):
     for file in allPyFiles:
         if file != "__init__":
             returnModules.append(file)
-
     return returnModules
+
+def findAllModulesNames(relativeDirectory):
+    validModules = findAllModules(relativeDirectory)
+
+    validModulesName = []
+
+    #packageFolder = relativeDirectory.partition("/Modules/")[2]
+    #print(packageFolder)
+
+    for m in validModules:
+        print(m)
+        mod = __import__("Modules.Blueprint." + m, {}, {}, [m])
+        importlib.reload(mod)
+        validModulesName.append(mod.CLASS_NAME)
+    return(validModules, validModulesName)
+
 
 def findAllFiles(relativeDirectory, fileExtension):
     # search the relative directory for all files with the given extension
     # return a list of all file names, excluding the file extension
 
     import os
-    fileDirectory = "D:/Maya2022/scripts/GM21_Rig/RiggingTool/" + relativeDirectory + "/"
+    fileDirectory = os.environ["RIGGING_TOOL_ROOT"] +"/"+ relativeDirectory + "/"
+
     allFiles = os.listdir(fileDirectory)
     # refine all files, listing only those of the specified file extension
     returnFiles = []
     for f in allFiles:
         splitStr = str(f).rpartition(fileExtension)
-        if not splitStr[1] == "" and splitStr[2]=="":
+        if not splitStr[1] == "" and splitStr[2] == "":
             returnFiles.append(splitStr[0])
 
     return returnFiles
@@ -93,9 +111,6 @@ def basic_stretchy_IK(rootJoint, endJoint, container=None, lockMinimumLength=Tru
             parent = child
             if child == endJoint:
                 done=True
-
-
-
 
     # Create RP IK on joint chain
     ikNodes = cmds.ikHandle(sj=rootJoint, ee=endJoint, sol="ikRPsolver", n='{}_ikHandle'.format(rootJoint))
